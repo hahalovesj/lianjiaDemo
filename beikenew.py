@@ -7,9 +7,9 @@ from selenium import webdriver  # 导入webdriver包
 import time
 import xlrd
 
-start = time.clock()  # 程序开始时间
+start = time.perf_counter()  # 程序开始时间
 # 打开文件
-workbook = xlrd.open_workbook(r'/Volumes/sd/workSpace/vsCodeWorkplace/LianJiaDemo/目标盘.xls')
+workbook = xlrd.open_workbook(r'D:\shenjing\vsCodeWorkplace\beike\目标盘.xls')
 # 根据sheet索引或者名称获取sheet内容
 bj_list2 = workbook.sheet_by_name('北京')
 # 北京sheet的第一列内容
@@ -28,19 +28,24 @@ time.sleep(1)  # 暂停1秒钟
 print("---------------------【开始爬取北京楼盘数据】----------------------")
 for i in range(len(bj_list)):
     driver.get("https://bj.ke.com/ershoufang/rs" + bj_list[i])  # 通过get()方法，打开一个url站点
-    time.sleep(4)  # 暂停2秒钟
+    print("-----------------------【" + bj_list[i] + "】-----------------------")
+    time.sleep(2)  # 暂停2秒钟
 
+    flag = False  # 判断楼盘吊顶卡片是否存在标志
     try:
-        ele = driver.find_element_by_xpath("//*[@id='sem_card']/div")
-        if len(ele) > 0:
-            chushou = driver.find_element_by_xpath("//*[@id='sem_card']/div/div[2]/div[2]/div[2]/div[2]")
-            chengjiao = driver.find_element_by_xpath("//*[@id='sem_card']/div/div[2]/div[2]/div[3]/div[2]")
-            daikan = driver.find_element_by_xpath("//*[@id='sem_card']/div/div[2]/div[2]/div[4]/div[2]")
-            print(bj_list[i])
-            print(" 正在出售" + chushou.text + " 近90天成交" + chengjiao.text + " 近30天带看" + daikan.text)
-            time.sleep(2)  # 暂停2秒钟
+        ele = driver.find_element_by_xpath("//*[@id='sem_card']/div/div[2]")
+        flag = True
     except:
-        print("没有楼盘卡片")
+        flag = False
+        print("没有楼盘吊顶卡片")
+
+    if flag:  # 楼盘卡片存在
+        chushou = driver.find_element_by_xpath("//*[@id='sem_card']/div/div[2]/div[2]/div[2]/div[2]")
+        chengjiao = driver.find_element_by_xpath("//*[@id='sem_card']/div/div[2]/div[2]/div[3]/div[2]")
+        daikan = driver.find_element_by_xpath("//*[@id='sem_card']/div/div[2]/div[2]/div[4]/div[2]")
+
+        print(" 正在出售" + chushou.text + " 近90天成交" + chengjiao.text + " 近30天带看" + daikan.text)
+        time.sleep(2)  # 暂停2秒钟
 
     # 房源爬虫
     lists = driver.find_elements_by_xpath("//*[@id='beike']/div[1]/div[4]/div[1]/div[4]/ul//li/a")  # 找到a链接
@@ -52,7 +57,6 @@ for i in range(len(bj_list)):
                 continue
             # 在每次循环内都重新获取a标签，组成列表
             links = driver.find_elements_by_xpath("//*[@id='beike']/div[1]/div[4]/div[1]/div[4]/ul//li/a")
-
             link = links[j]  # 逐一将列表里的a标签赋给link
             url = link.get_attribute('href')  # 提取a标签内的链接，注意这里提取出来的链接是字符串
             print(url)
@@ -89,8 +93,8 @@ for i in range(len(bj_list)):
             for j in range(len(lists)):  # 遍历列表的循环，使程序可以逐一点击
                 if j == 5:  # 第5个推广引流的a跳过
                     continue
-                links = driver.find_elements_by_xpath(
-                    "//*[@id='beike']/div[1]/div[4]/div[1]/div[4]/ul//li/a")  # 在每次循环内都重新获取a标签，组成列表
+                # 在每次循环内都重新获取a标签，组成列表
+                links = driver.find_elements_by_xpath("//*[@id='beike']/div[1]/div[4]/div[1]/div[4]/ul//li/a")
                 link = links[j]  # 逐一将列表里的a标签赋给link
                 url = link.get_attribute('href')  # 提取a标签内的链接，注意这里提取出来的链接是字符串
                 print(url)
@@ -112,10 +116,10 @@ for i in range(len(bj_list)):
                 time.sleep(1)  # 留出加载时间
     else:
         pass
-
-time.sleep(1)  # 暂停1秒钟
+'''
+time.sleep(3)  # 暂停
 print("--------------开始爬取上海房屋数据----------------")
-for i in range(4):
+for i in range(len(sh_list)):
     driver.get("https://sh.ke.com/ershoufang/rs" + sh_list[i])
     time.sleep(3)  # 暂停2秒钟
     chushou = driver.find_element_by_xpath("//*[@id='sem_card']/div/div[2]/div[2]/div[2]/div[2]")
@@ -123,6 +127,7 @@ for i in range(4):
     daikan = driver.find_element_by_xpath("//*[@id='sem_card']/div/div[2]/div[2]/div[4]/div[2]")
     print(bj_list[i] + "正在出售" + chushou.text + " 近90天成交" + chengjiao.text + " 近30天带看" + daikan.text)
     time.sleep(2)  # 暂停2秒钟
+'''
 
 '''
 # 第三方 SMTP 服务
@@ -160,5 +165,5 @@ except smtplib.SMTPException:
     print("Error: 无法发送邮件")
 '''
 driver.quit()
-end = time.clock()  # 结束时间
+end = time.perf_counter()  # 结束时间 单位秒
 print("运行耗时", end - start)
